@@ -1,7 +1,8 @@
 name: verification_code_field
 description: "A new Flutter package project."
 version: 0.0.1
-homepage:
+repository: https://github.com/enescerrahoglu/verification_code_field
+homepage: https://enescerrahoglu.com/
 
 environment:
   sdk: ^3.5.4

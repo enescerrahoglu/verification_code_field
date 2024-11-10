@@ -24,11 +24,23 @@ class MyApp extends StatelessWidget {
 class VerificationCodeFieldExample extends StatelessWidget {
   VerificationCodeFieldExample({super.key});
 
-  final ValueNotifier<String> _enteredCode = ValueNotifier<String>('');
+  final ValueNotifier<String> _enteredCode1 = ValueNotifier<String>('');
+  final ValueNotifier<String> _enteredCode2 = ValueNotifier<String>('');
+  final ValueNotifier<String> _enteredCode3 = ValueNotifier<String>('');
 
-  void _handleSubmit(String code) {
-    _enteredCode.value = code;
-    debugPrint('Entered Code: $code');
+  void _handleSubmit1(String code) {
+    _enteredCode1.value = code;
+    debugPrint('#1 Entered Code: $code');
+  }
+
+  void _handleSubmit2(String code) {
+    _enteredCode2.value = code;
+    debugPrint('#2 Entered Code: $code');
+  }
+
+  void _handleSubmit3(String code) {
+    _enteredCode3.value = code;
+    debugPrint('#3 Entered Code: $code');
   }
 
   @override
@@ -49,7 +61,7 @@ class VerificationCodeFieldExample extends StatelessWidget {
                 const Text('Example #1'),
                 Center(
                   child: VerificationCodeField(
-                    onSubmit: _handleSubmit,
+                    onSubmit: _handleSubmit1,
                   ),
                 ),
               ],
@@ -62,7 +74,7 @@ class VerificationCodeFieldExample extends StatelessWidget {
                 Center(
                   child: VerificationCodeField(
                     codeDigit: CodeDigit.five,
-                    onSubmit: _handleSubmit,
+                    onSubmit: _handleSubmit2,
                     enabled: true,
                     showCursor: true,
                     filled: true,
@@ -82,7 +94,7 @@ class VerificationCodeFieldExample extends StatelessWidget {
                 Center(
                   child: VerificationCodeField(
                     codeDigit: CodeDigit.six,
-                    onSubmit: _handleSubmit,
+                    onSubmit: _handleSubmit3,
                     enabled: true,
                     filled: true,
                     fillColor: Colors.purple.shade50,
@@ -94,9 +106,29 @@ class VerificationCodeFieldExample extends StatelessWidget {
             ),
             const SizedBox(height: 30),
             ValueListenableBuilder(
-              valueListenable: _enteredCode,
+              valueListenable: _enteredCode1,
               builder: (context, value, child) => Text(
-                'Entered Code: ${_enteredCode.value}',
+                '#1 Entered Code: ${_enteredCode1.value}',
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+            const SizedBox(height: 10),
+            ValueListenableBuilder(
+              valueListenable: _enteredCode2,
+              builder: (context, value, child) => Text(
+                '#2 Entered Code: ${_enteredCode2.value}',
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+            const SizedBox(height: 10),
+            ValueListenableBuilder(
+              valueListenable: _enteredCode3,
+              builder: (context, value, child) => Text(
+                '#3 Entered Code: ${_enteredCode3.value}',
                 style: const TextStyle(
                   fontWeight: FontWeight.bold,
                 ),

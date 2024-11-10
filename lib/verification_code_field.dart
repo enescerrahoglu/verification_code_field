@@ -1,13 +1,13 @@
-library verification_code_field;
+library VerificationCodeField;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-/// A widget for entering a verification code, consisting of separate TextField
+/// A widget for entering a Verification Code, consisting of separate TextField
 /// widgets for each character. Each character is displayed in an individual box.
 class VerificationCodeField extends StatefulWidget {
-  /// Specifies the number of digits in the verification code. Default is 4.
+  /// Specifies the number of digits in the Verification Code. Default is 4.
   final CodeDigit codeDigit;
 
   /// Callback function that returns the completed code once all digits are entered.
@@ -15,9 +15,6 @@ class VerificationCodeField extends StatefulWidget {
 
   /// Whether the TextField widgets are enabled for input.
   final bool? enabled;
-
-  /// Default border radius for each TextField box.
-  final BorderRadius? defaultBorderRadius;
 
   /// Text style for the input digits.
   final TextStyle? textStyle;
@@ -34,21 +31,28 @@ class VerificationCodeField extends StatefulWidget {
   /// Border style for each TextField box.
   final InputBorder? border;
 
+  /// Border style for each focused TextField box.
+  final InputBorder? focusedBorder;
+
   /// Color of the cursor when `showCursor` is true.
   final Color? cursorColor;
+
+  /// Determines whether the input text should be obscured for security purposes.
+  final bool obscureText;
 
   const VerificationCodeField({
     super.key,
     this.codeDigit = CodeDigit.four,
     this.onSubmit,
     this.enabled,
-    this.defaultBorderRadius,
     this.textStyle,
     this.showCursor = false,
     this.filled,
     this.fillColor,
     this.border,
+    this.focusedBorder,
     this.cursorColor,
+    this.obscureText = false,
   });
 
   @override
@@ -117,7 +121,7 @@ class _VerificationCodeFieldState extends State<VerificationCodeField> {
   Widget build(BuildContext context) {
     return SizedBox(
       // Sets height based on the device's screen width, keeping a responsive layout.
-      height: (MediaQuery.of(context).size.width / 6) - 10,
+      height: (MediaQuery.of(context).size.width / 6) - 24,
       child: ListView.separated(
         itemCount: widget.codeDigit.digit,
         shrinkWrap: true,
@@ -128,6 +132,7 @@ class _VerificationCodeFieldState extends State<VerificationCodeField> {
             child: SizedBox(
               width: (MediaQuery.of(context).size.width / 6) - 24,
               child: TextField(
+                obscureText: widget.obscureText,
                 cursorColor: widget.cursorColor,
                 enabled: widget.enabled,
                 controller: _controllers[index],
@@ -137,7 +142,7 @@ class _VerificationCodeFieldState extends State<VerificationCodeField> {
                 enableInteractiveSelection: false,
                 style: widget.textStyle ??
                     TextStyle(
-                      fontSize: 24,
+                      fontSize: 26,
                       fontWeight: FontWeight.bold,
                       color: Theme.of(context).colorScheme.primary,
                       fontFamily:
@@ -154,10 +159,10 @@ class _VerificationCodeFieldState extends State<VerificationCodeField> {
                   filled: widget.filled,
                   fillColor: widget.fillColor,
                   contentPadding: const EdgeInsetsDirectional.all(0),
+                  focusedBorder: widget.focusedBorder,
                   border: widget.border ??
                       OutlineInputBorder(
-                        borderRadius: widget.defaultBorderRadius ??
-                            BorderRadius.circular(10.0),
+                        borderRadius: BorderRadius.circular(10.0),
                       ),
                 ),
                 // Calls _handleTextChanged for each text change in a TextField.
@@ -171,7 +176,7 @@ class _VerificationCodeFieldState extends State<VerificationCodeField> {
   }
 }
 
-/// Enum to represent the number of digits for the verification code.
+/// Enum to represent the number of digits for the Verification Code.
 enum CodeDigit {
   four(4),
   five(5),

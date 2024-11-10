@@ -1,3 +1,11 @@
+## 1.0.3
+
+- Added obscureText and focusedBorder properties.
+
+## 1.0.2
+
+- Bugs fixed.
+
 ## 1.0.1
 
 - Documentation added.

@@ -73,6 +73,7 @@ class VerificationCodeFieldExample extends StatelessWidget {
                 const Text('Example #2'),
                 Center(
                   child: VerificationCodeField(
+                    obscureText: true,
                     codeDigit: CodeDigit.five,
                     onSubmit: _handleSubmit2,
                     enabled: true,
@@ -101,11 +102,14 @@ class VerificationCodeFieldExample extends StatelessWidget {
                     codeDigit: CodeDigit.six,
                     onSubmit: _handleSubmit3,
                     enabled: true,
-                    filled: true,
-                    fillColor: Colors.purple.shade50,
-                    defaultBorderRadius: BorderRadius.circular(100),
+                    border: const UnderlineInputBorder(
+                      borderSide: BorderSide(color: Colors.green, width: 1.5),
+                    ),
+                    focusedBorder: const UnderlineInputBorder(
+                      borderSide: BorderSide(color: Colors.green, width: 1.5),
+                    ),
                     textStyle:
-                        const TextStyle(fontSize: 20, color: Colors.purple),
+                        const TextStyle(fontSize: 20, color: Colors.green),
                   ),
                 ),
               ],

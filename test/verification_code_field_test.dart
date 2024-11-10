@@ -5,7 +5,8 @@ import 'package:flutter/material.dart';
 
 void main() {
   group('VerificationCodeField Tests', () {
-    testWidgets('Should display the correct number of text fields', (WidgetTester tester) async {
+    testWidgets('Should display the correct number of text fields',
+        (WidgetTester tester) async {
       await tester.pumpWidget(
         const MaterialApp(
           home: Scaffold(
@@ -18,7 +19,8 @@ void main() {
       expect(find.byType(TextField), findsNWidgets(4));
     });
 
-    testWidgets('Should submit code when all fields are filled', (WidgetTester tester) async {
+    testWidgets('Should submit code when all fields are filled',
+        (WidgetTester tester) async {
       String submittedCode = '';
       await tester.pumpWidget(
         MaterialApp(
@@ -33,7 +35,8 @@ void main() {
 
       // Enter digits in each TextField
       for (var i = 0; i < 4; i++) {
-        await tester.enterText(find.byType(TextField).at(i), (i + 1).toString());
+        await tester.enterText(
+            find.byType(TextField).at(i), (i + 1).toString());
         await tester.pumpAndSettle();
       }
 
@@ -41,7 +44,8 @@ void main() {
       expect(submittedCode, '1234');
     });
 
-    testWidgets('Should move focus to the next field when a digit is entered', (WidgetTester tester) async {
+    testWidgets('Should move focus to the next field when a digit is entered',
+        (WidgetTester tester) async {
       await tester.pumpWidget(
         const MaterialApp(
           home: Scaffold(
@@ -59,7 +63,8 @@ void main() {
       expect(tester.widget<TextField>(secondField).focusNode?.hasFocus, true);
     });
 
-    testWidgets('Should move focus to the previous field on backspace', (WidgetTester tester) async {
+    testWidgets('Should move focus to the previous field on backspace',
+        (WidgetTester tester) async {
       await tester.pumpWidget(
         const MaterialApp(
           home: Scaffold(
@@ -83,7 +88,8 @@ void main() {
       expect(tester.widget<TextField>(firstField).focusNode?.hasFocus, true);
     });
 
-    testWidgets('Should not allow more than one digit in a field', (WidgetTester tester) async {
+    testWidgets('Should not allow more than one digit in a field',
+        (WidgetTester tester) async {
       await tester.pumpWidget(
         const MaterialApp(
           home: Scaffold(
@@ -100,7 +106,8 @@ void main() {
       expect(find.text('3'), findsOneWidget);
     });
 
-    testWidgets('Should clear field on tap if it contains a placeholder', (WidgetTester tester) async {
+    testWidgets('Should clear field on tap if it contains a placeholder',
+        (WidgetTester tester) async {
       await tester.pumpWidget(
         const MaterialApp(
           home: Scaffold(

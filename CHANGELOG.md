@@ -1,3 +1,7 @@
+## 1.0.1
+
+- Documentation added.
+
 ## 1.0.0
 
 - Support for 4, 5, or 6-digit codes.

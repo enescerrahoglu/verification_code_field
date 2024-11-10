@@ -80,8 +80,13 @@ class VerificationCodeFieldExample extends StatelessWidget {
                     filled: true,
                     fillColor: Colors.blue.shade100,
                     cursorColor: Colors.blue,
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide.none),
-                    textStyle: const TextStyle(fontSize: 26, color: Colors.blue, fontWeight: FontWeight.bold),
+                    border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
+                        borderSide: BorderSide.none),
+                    textStyle: const TextStyle(
+                        fontSize: 26,
+                        color: Colors.blue,
+                        fontWeight: FontWeight.bold),
                   ),
                 ),
               ],
@@ -99,7 +104,8 @@ class VerificationCodeFieldExample extends StatelessWidget {
                     filled: true,
                     fillColor: Colors.purple.shade50,
                     defaultBorderRadius: BorderRadius.circular(100),
-                    textStyle: const TextStyle(fontSize: 20, color: Colors.purple),
+                    textStyle:
+                        const TextStyle(fontSize: 20, color: Colors.purple),
                   ),
                 ),
               ],

@@ -1,6 +1,6 @@
 name: verification_code_field
 description: "This package provides an input field that allows you to enter a 4 or 6 digit verification code in your applications."
-version: 1.0.0
+version: 1.0.1
 repository: https://github.com/enescerrahoglu/verification_code_field
 homepage: https://enescerrahoglu.com/
 

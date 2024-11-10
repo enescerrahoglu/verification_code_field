@@ -8,7 +8,7 @@ class VerificationCodeField extends StatefulWidget {
   final CodeDigit codeDigit;
   final ValueChanged<String>? onSubmit;
   final bool? enabled;
-  final BorderRadius? borderRadius;
+  final BorderRadius? defaultBorderRadius;
   final TextStyle? textStyle;
   final bool? showCursor;
   final bool? filled;
@@ -20,7 +20,7 @@ class VerificationCodeField extends StatefulWidget {
     this.codeDigit = CodeDigit.four,
     this.onSubmit,
     this.enabled,
-    this.borderRadius,
+    this.defaultBorderRadius,
     this.textStyle,
     this.showCursor = false,
     this.filled,
@@ -120,7 +120,7 @@ class _VerificationCodeFieldState extends State<VerificationCodeField> {
                   contentPadding: const EdgeInsetsDirectional.all(0),
                   border: widget.border ??
                       OutlineInputBorder(
-                        borderRadius: widget.borderRadius ?? BorderRadius.circular(10.0),
+                        borderRadius: widget.defaultBorderRadius ?? BorderRadius.circular(10.0),
                       ),
                 ),
                 onChanged: (value) => _handleTextChanged(value, index),

@@ -24,7 +24,7 @@ class VerificationCodeFieldExample extends StatelessWidget {
   const VerificationCodeFieldExample({super.key});
 
   void _handleSubmit(String code) {
-    debugPrint('Girilen Kod: $code');
+    debugPrint('Entered Code: $code');
   }
 
   @override
@@ -43,7 +43,7 @@ class VerificationCodeFieldExample extends StatelessWidget {
             showCursor: true,
             filled: true,
             fillColor: Colors.grey.shade200,
-            borderRadius: BorderRadius.circular(8),
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide.none),
             textStyle: const TextStyle(fontSize: 20, color: Colors.black),
           ),
         ),

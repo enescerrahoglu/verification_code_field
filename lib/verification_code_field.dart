@@ -14,6 +14,7 @@ class VerificationCodeField extends StatefulWidget {
   final bool? filled;
   final Color? fillColor;
   final InputBorder? border;
+  final Color? cursorColor;
 
   const VerificationCodeField({
     super.key,
@@ -26,6 +27,7 @@ class VerificationCodeField extends StatefulWidget {
     this.filled,
     this.fillColor,
     this.border,
+    this.cursorColor,
   });
 
   @override
@@ -95,6 +97,7 @@ class _VerificationCodeFieldState extends State<VerificationCodeField> {
             child: SizedBox(
               width: (MediaQuery.of(context).size.width / 6) - 24,
               child: TextField(
+                cursorColor: widget.cursorColor,
                 enabled: widget.enabled,
                 controller: _controllers[index],
                 focusNode: _focusNodes[index],

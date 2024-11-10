@@ -315,11 +315,9 @@ packages:
   verification_code_field:
     dependency: "direct main"
     description:
-      path: "."
-      ref: HEAD
-      resolved-ref: b0dedc2342fe6b9cd7ffe1d95700af8f8399d090
-      url: "https://github.com/enescerrahoglu/verification_code_field.git"
-    source: git
+      path: ".."
+      relative: true
+    source: path
     version: "0.0.1"
   vm_service:
     dependency: transitive

@@ -31,8 +31,7 @@ dependencies:
   flutter:
     sdk: flutter
   verification_code_field:
-    git:
-      url: https://github.com/enescerrahoglu/verification_code_field.git
+    path: ../
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.

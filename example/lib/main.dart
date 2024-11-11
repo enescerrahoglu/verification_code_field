@@ -47,12 +47,12 @@ class VerificationCodeFieldExample extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Verification Code Field Example'),
+        title: const Text('Verification Code Field'),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+          // mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Column(
@@ -73,7 +73,6 @@ class VerificationCodeFieldExample extends StatelessWidget {
                 const Text('Example #2'),
                 Center(
                   child: VerificationCodeField(
-                    obscureText: true,
                     codeDigit: CodeDigit.five,
                     onSubmit: _handleSubmit2,
                     enabled: true,
@@ -82,7 +81,7 @@ class VerificationCodeFieldExample extends StatelessWidget {
                     fillColor: Colors.blue.shade100,
                     cursorColor: Colors.blue,
                     border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10),
+                        borderRadius: BorderRadius.circular(100),
                         borderSide: BorderSide.none),
                     textStyle: const TextStyle(
                         fontSize: 26,

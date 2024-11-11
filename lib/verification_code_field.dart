@@ -37,9 +37,6 @@ class VerificationCodeField extends StatefulWidget {
   /// Color of the cursor when `showCursor` is true.
   final Color? cursorColor;
 
-  /// Determines whether the input text should be obscured for security purposes.
-  final bool obscureText;
-
   const VerificationCodeField({
     super.key,
     this.codeDigit = CodeDigit.four,
@@ -52,7 +49,6 @@ class VerificationCodeField extends StatefulWidget {
     this.border,
     this.focusedBorder,
     this.cursorColor,
-    this.obscureText = false,
   });
 
   @override
@@ -132,7 +128,6 @@ class _VerificationCodeFieldState extends State<VerificationCodeField> {
             child: SizedBox(
               width: (MediaQuery.of(context).size.width / 6) - 24,
               child: TextField(
-                obscureText: widget.obscureText,
                 cursorColor: widget.cursorColor,
                 enabled: widget.enabled,
                 controller: _controllers[index],

@@ -37,6 +37,12 @@ class VerificationCodeField extends StatefulWidget {
   /// Color of the cursor when `showCursor` is true.
   final Color? cursorColor;
 
+  /// A single field deletion gesture clears all fields and focuses on the first field. Default is false.
+  final bool cleanAllAtOnce;
+
+  /// Divides 6-digit fields into two groups of three. Default is false.
+  final bool tripleSeparated;
+
   const VerificationCodeField({
     super.key,
     this.codeDigit = CodeDigit.four,
@@ -49,6 +55,8 @@ class VerificationCodeField extends StatefulWidget {
     this.border,
     this.focusedBorder,
     this.cursorColor,
+    this.cleanAllAtOnce = false,
+    this.tripleSeparated = false,
   });
 
   @override
@@ -108,8 +116,13 @@ class _VerificationCodeFieldState extends State<VerificationCodeField> {
       }
     } else if (index > 0) {
       // Moves focus to the previous field if backspace is pressed.
-      _controllers[index].text = ' ';
-      FocusScope.of(context).requestFocus(_focusNodes[index - 1]);
+      if (widget.cleanAllAtOnce) {
+        _controllers.map((controller) => controller.text = ' ').toList();
+        FocusScope.of(context).requestFocus(_focusNodes[0]);
+      } else {
+        _controllers[index].text = ' ';
+        FocusScope.of(context).requestFocus(_focusNodes[index - 1]);
+      }
     }
   }
 
@@ -122,7 +135,14 @@ class _VerificationCodeFieldState extends State<VerificationCodeField> {
         itemCount: widget.codeDigit.digit,
         shrinkWrap: true,
         scrollDirection: Axis.horizontal,
-        separatorBuilder: (context, index) => const SizedBox(width: 10),
+        separatorBuilder: (context, index) => SizedBox(
+            width: (widget.codeDigit == CodeDigit.six &&
+                    widget.tripleSeparated &&
+                    index == 2)
+                ? 20
+                : widget.tripleSeparated
+                    ? 5
+                    : 10),
         itemBuilder: (context, index) {
           return Center(
             child: SizedBox(

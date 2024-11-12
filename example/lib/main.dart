@@ -52,7 +52,6 @@ class VerificationCodeFieldExample extends StatelessWidget {
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
-          // mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Column(
@@ -61,6 +60,7 @@ class VerificationCodeFieldExample extends StatelessWidget {
                 const Text('Example #1'),
                 Center(
                   child: VerificationCodeField(
+                    cleanAllAtOnce: true,
                     onSubmit: _handleSubmit1,
                   ),
                 ),
@@ -73,7 +73,8 @@ class VerificationCodeFieldExample extends StatelessWidget {
                 const Text('Example #2'),
                 Center(
                   child: VerificationCodeField(
-                    codeDigit: CodeDigit.five,
+                    tripleSeparated: true,
+                    codeDigit: CodeDigit.six,
                     onSubmit: _handleSubmit2,
                     enabled: true,
                     showCursor: true,
@@ -98,6 +99,7 @@ class VerificationCodeFieldExample extends StatelessWidget {
                 const Text('Example #3'),
                 Center(
                   child: VerificationCodeField(
+                    tripleSeparated: true,
                     codeDigit: CodeDigit.six,
                     onSubmit: _handleSubmit3,
                     enabled: true,

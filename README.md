@@ -9,6 +9,7 @@
 - **Styling Options:** Provides customization for border, fill color, cursor color, text style, and font to fit seamlessly into your app's theme.
 - **Event Listener:** Includes onSubmit callback to easily retrieve the entered code once all fields are filled.
 - **Built-in Input Formatting:** Ensures only digits are entered by default, preventing unintended characters in the verification code.
+- and more...
 
 ## Getting started
 Run this command:

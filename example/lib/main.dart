@@ -62,6 +62,9 @@ class VerificationCodeFieldExample extends StatelessWidget {
                   child: VerificationCodeField(
                     cleanAllAtOnce: true,
                     onSubmit: _handleSubmit1,
+                    onChanged: (p0) {
+                      debugPrint(p0);
+                    },
                   ),
                 ),
               ],
@@ -76,6 +79,9 @@ class VerificationCodeFieldExample extends StatelessWidget {
                     tripleSeparated: true,
                     codeDigit: CodeDigit.six,
                     onSubmit: _handleSubmit2,
+                    onChanged: (p0) {
+                      debugPrint(p0);
+                    },
                     enabled: true,
                     showCursor: true,
                     filled: true,

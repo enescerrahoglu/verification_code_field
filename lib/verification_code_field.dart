@@ -11,6 +11,9 @@ class VerificationCodeField extends StatefulWidget {
   /// Callback function that returns the completed code once all digits are entered.
   final ValueChanged<String>? onSubmit;
 
+  /// Called when the user initiates a change to the TextField's value: when they have inserted or deleted text.
+  final void Function(String)? onChanged;
+
   /// Whether the TextField widgets are enabled for input.
   final bool? enabled;
 
@@ -45,6 +48,7 @@ class VerificationCodeField extends StatefulWidget {
     super.key,
     this.codeDigit = CodeDigit.four,
     this.onSubmit,
+    this.onChanged,
     this.enabled,
     this.textStyle,
     this.showCursor = false,
@@ -94,13 +98,20 @@ class _VerificationCodeFieldState extends State<VerificationCodeField> {
       if (widget.cleanAllAtOnce) {
         _controllers.map((controller) => controller.text = ' ').toList();
         FocusScope.of(context).requestFocus(_focusNodes[0]);
+        widget.onChanged?.call('');
       } else {
         _controllers[index].text = ' ';
         if (index > 0) {
           FocusScope.of(context).requestFocus(_focusNodes[index - 1]);
         }
+        final currentValue =
+            _controllers.map((controller) => controller.text.trim()).join();
+        widget.onChanged?.call(currentValue);
       }
     } else {
+      final currentValue =
+          _controllers.map((controller) => controller.text.trim()).join();
+      widget.onChanged?.call(currentValue);
       _controllers[index].text = value.substring(value.length - 1);
       if (index == _controllers.length - 1) {
         final code =
@@ -136,10 +147,13 @@ class _VerificationCodeFieldState extends State<VerificationCodeField> {
     }
 
     if (limitedDigits.length == widget.codeDigit.digit) {
-      widget.onSubmit
-          ?.call(_controllers.map((controller) => controller.text).join());
+      widget.onSubmit?.call(
+          _controllers.map((controller) => controller.text.trim()).join());
       FocusManager.instance.primaryFocus?.unfocus();
     }
+    final currentValue =
+        _controllers.map((controller) => controller.text.trim()).join();
+    widget.onChanged?.call(currentValue);
   }
 
   @override
@@ -168,7 +182,7 @@ class _VerificationCodeFieldState extends State<VerificationCodeField> {
                 focusNode: _focusNodes[index],
                 showCursor: widget.showCursor,
                 cursorColor: widget.cursorColor,
-                enableInteractiveSelection: false,
+                // enableInteractiveSelection: false,
                 contextMenuBuilder: (context, editableTextState) {
                   List<ContextMenuButtonItem> items = editableTextState
                       .contextMenuButtonItems

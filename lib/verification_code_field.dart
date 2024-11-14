@@ -1,5 +1,3 @@
-library VerificationCodeField;
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -69,7 +67,6 @@ class _VerificationCodeFieldState extends State<VerificationCodeField> {
 
   @override
   void initState() {
-    // Initializes the controllers and focus nodes based on the number of digits.
     _controllers = List.generate(
       widget.codeDigit.digit,
       (index) => TextEditingController(text: ' '),
@@ -80,7 +77,6 @@ class _VerificationCodeFieldState extends State<VerificationCodeField> {
 
   @override
   void dispose() {
-    // Disposes of controllers and focus nodes to free resources.
     for (var controller in _controllers) {
       controller.dispose();
     }
@@ -90,19 +86,22 @@ class _VerificationCodeFieldState extends State<VerificationCodeField> {
     super.dispose();
   }
 
-  /// Handles text changes in each TextField. If a digit is entered, it moves to the next field.
-  /// If backspace is pressed and the field is empty, it moves to the previous field.
+  /// Handles text changes in each TextField.
   void _handleTextChanged(String value, int index) {
-    // If multiple characters are entered, keep only the last one.
-    if (value.length > 1) {
+    if (value.trim().length >= widget.codeDigit.digit) {
+      _handlePaste(value);
+    } else if (value.trim().isEmpty) {
+      if (widget.cleanAllAtOnce) {
+        _controllers.map((controller) => controller.text = ' ').toList();
+        FocusScope.of(context).requestFocus(_focusNodes[0]);
+      } else {
+        _controllers[index].text = ' ';
+        if (index > 0) {
+          FocusScope.of(context).requestFocus(_focusNodes[index - 1]);
+        }
+      }
+    } else {
       _controllers[index].text = value.substring(value.length - 1);
-      _controllers[index].selection = TextSelection.fromPosition(
-        TextPosition(offset: _controllers[index].text.length),
-      );
-    }
-
-    if (_controllers[index].text.isNotEmpty) {
-      // When last field is filled, calls `onSubmit` with the full code.
       if (index == _controllers.length - 1) {
         final code =
             _controllers.map((controller) => controller.text.trim()).join();
@@ -111,25 +110,41 @@ class _VerificationCodeFieldState extends State<VerificationCodeField> {
           FocusManager.instance.primaryFocus?.unfocus();
         }
       } else {
-        // Moves focus to the next field if current field is not the last one.
         FocusScope.of(context).requestFocus(_focusNodes[index + 1]);
       }
-    } else if (index > 0) {
-      // Moves focus to the previous field if backspace is pressed.
-      if (widget.cleanAllAtOnce) {
-        _controllers.map((controller) => controller.text = ' ').toList();
-        FocusScope.of(context).requestFocus(_focusNodes[0]);
-      } else {
-        _controllers[index].text = ' ';
-        FocusScope.of(context).requestFocus(_focusNodes[index - 1]);
-      }
+    }
+  }
+
+  /// Handles pasted text and distributes digits across fields, triggering submit if completed.
+  void _handlePaste(String value) {
+    _controllers.map((controller) => controller.text = ' ').toList();
+    FocusScope.of(context).requestFocus(_focusNodes[0]);
+
+    final digits = RegExp(r'\d')
+        .allMatches(value)
+        .map((match) => match.group(0)!)
+        .toList();
+
+    final limitedDigits = digits.length > widget.codeDigit.digit
+        ? digits.sublist(digits.length - widget.codeDigit.digit)
+        : digits;
+
+    for (int i = 0;
+        i < widget.codeDigit.digit && i < limitedDigits.length;
+        i++) {
+      _controllers[i].text = limitedDigits[i];
+    }
+
+    if (limitedDigits.length == widget.codeDigit.digit) {
+      widget.onSubmit
+          ?.call(_controllers.map((controller) => controller.text).join());
+      FocusManager.instance.primaryFocus?.unfocus();
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      // Sets height based on the device's screen width, keeping a responsive layout.
       height: (MediaQuery.of(context).size.width / 6) - 24,
       child: ListView.separated(
         itemCount: widget.codeDigit.digit,
@@ -148,13 +163,38 @@ class _VerificationCodeFieldState extends State<VerificationCodeField> {
             child: SizedBox(
               width: (MediaQuery.of(context).size.width / 6) - 24,
               child: TextField(
-                cursorColor: widget.cursorColor,
                 enabled: widget.enabled,
                 controller: _controllers[index],
                 focusNode: _focusNodes[index],
                 showCursor: widget.showCursor,
-                contextMenuBuilder: null,
+                cursorColor: widget.cursorColor,
                 enableInteractiveSelection: false,
+                contextMenuBuilder: (context, editableTextState) {
+                  List<ContextMenuButtonItem> items = editableTextState
+                      .contextMenuButtonItems
+                      .where((element) =>
+                          element.type == ContextMenuButtonType.paste)
+                      .toList();
+                  return AdaptiveTextSelectionToolbar.buttonItems(
+                    anchors: editableTextState.contextMenuAnchors,
+                    buttonItems: items,
+                  );
+                },
+                spellCheckConfiguration: SpellCheckConfiguration(
+                  spellCheckSuggestionsToolbarBuilder:
+                      (context, editableTextState) {
+                    List<ContextMenuButtonItem> items = editableTextState
+                        .contextMenuButtonItems
+                        .where((element) =>
+                            element.type == ContextMenuButtonType.paste)
+                        .toList();
+                    return AdaptiveTextSelectionToolbar.buttonItems(
+                      anchors: editableTextState.contextMenuAnchors,
+                      buttonItems: items,
+                    );
+                  },
+                ),
+                onTapAlwaysCalled: true,
                 style: widget.textStyle ??
                     TextStyle(
                       fontSize: 26,
@@ -180,8 +220,12 @@ class _VerificationCodeFieldState extends State<VerificationCodeField> {
                         borderRadius: BorderRadius.circular(10.0),
                       ),
                 ),
-                // Calls _handleTextChanged for each text change in a TextField.
                 onChanged: (value) => _handleTextChanged(value, index),
+                onTap: () {
+                  _controllers[index].selection = TextSelection(
+                      baseOffset: 1,
+                      extentOffset: _controllers[index].text.length);
+                },
               ),
             ),
           );

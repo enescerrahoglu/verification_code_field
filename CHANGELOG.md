@@ -1,3 +1,8 @@
+## 1.0.6
+
+- **`cleanAllAtOnce` property**: Added the `cleanAllAtOnce` option. When enabled, a single deletion gesture clears all fields and focuses on the first field. This feature enhances user convenience by allowing quick resets.
+- **`tripleSeparated` property**: Introduced the `tripleSeparated` option, which divides 6-digit fields into two groups of three, separated by additional spacing. This layout improves readability for certain verification code formats.
+
 ## 1.0.5
 
 - Added focusedBorder property.

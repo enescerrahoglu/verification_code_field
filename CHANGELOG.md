@@ -1,3 +1,7 @@
+## 1.0.8
+
+- Bugs fixed for the `onChanged` property.
+
 ## 1.0.7
 
 - **`onChanged` callback**: Introduced the `onChanged` property, which triggers a callback function whenever the user initiates a change in the TextField's value, whether through insertion or deletion. This addition allows for real-time handling of input updates.

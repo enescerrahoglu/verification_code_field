@@ -109,13 +109,11 @@ class _VerificationCodeFieldState extends State<VerificationCodeField> {
         widget.onChanged?.call(currentValue);
       }
     } else {
-      final currentValue =
-          _controllers.map((controller) => controller.text.trim()).join();
-      widget.onChanged?.call(currentValue);
       _controllers[index].text = value.substring(value.length - 1);
+      final code =
+          _controllers.map((controller) => controller.text.trim()).join();
+      widget.onChanged?.call(code);
       if (index == _controllers.length - 1) {
-        final code =
-            _controllers.map((controller) => controller.text.trim()).join();
         if (code.length == widget.codeDigit.digit) {
           widget.onSubmit?.call(code);
           FocusManager.instance.primaryFocus?.unfocus();

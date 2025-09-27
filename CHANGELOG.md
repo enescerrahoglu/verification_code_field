@@ -1,3 +1,8 @@
+## 1.1.0
+
+- Bugs fixed for the `border` property.
+- **`autoFocus` property**: Added the `autoFocus` option to automatically focus the first field when the widget is built, improving user experience.
+
 ## 1.0.8
 
 - Bugs fixed for the `onChanged` property.

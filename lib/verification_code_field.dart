@@ -44,6 +44,9 @@ class VerificationCodeField extends StatefulWidget {
   /// Divides 6-digit fields into two groups of three. Default is false.
   final bool tripleSeparated;
 
+  /// Whether the first TextField should automatically gain focus when the widget is built. Default is false.
+  final bool autoFocus;
+
   const VerificationCodeField({
     super.key,
     this.codeDigit = CodeDigit.four,
@@ -59,6 +62,7 @@ class VerificationCodeField extends StatefulWidget {
     this.cursorColor,
     this.cleanAllAtOnce = false,
     this.tripleSeparated = false,
+    this.autoFocus = false,
   });
 
   @override
@@ -76,6 +80,13 @@ class _VerificationCodeFieldState extends State<VerificationCodeField> {
       (index) => TextEditingController(text: ' '),
     );
     _focusNodes = List.generate(widget.codeDigit.digit, (index) => FocusNode());
+
+    if (widget.autoFocus) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        FocusScope.of(context).requestFocus(_focusNodes[0]);
+      });
+    }
+
     super.initState();
   }
 
@@ -227,6 +238,7 @@ class _VerificationCodeFieldState extends State<VerificationCodeField> {
                   fillColor: widget.fillColor,
                   contentPadding: const EdgeInsetsDirectional.all(0),
                   focusedBorder: widget.focusedBorder,
+                  enabledBorder: widget.border,
                   border: widget.border ??
                       OutlineInputBorder(
                         borderRadius: BorderRadius.circular(10.0),

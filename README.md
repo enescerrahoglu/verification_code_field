@@ -1,7 +1,8 @@
 # VerificationCodeField
 
 ### This package provides an input field that allows you to enter a 4, 5 or 6 digit verification code in your applications.
-<img width="1920" height="1080" alt="verification_code_field" src="https://github.com/user-attachments/assets/99e7c145-41af-4c50-a8b5-5eeda034de8b" />
+![verification_code_field](https://github.com/user-attachments/assets/99e7c145-41af-4c50-a8b5-5eeda034de8b)
+
 
 ## Features
 - **Customizable Digit Count:** Supports verification codes of 4, 5, or 6 digits with CodeDigit enumeration, making it flexible for different authentication requirements.
@@ -26,4 +27,4 @@ flutter pub add verification_code_field
 - **Modular and Reusable:** The VerificationCodeField is designed to be reusable and adaptable, making it a valuable addition to any authentication or verification form within your app.
 
 ## Screenshots
-![Simulator Screenshot - iPhone 16 Pro Max - 2024-11-11 at 11 35 10](https://github.com/user-attachments/assets/7792ee0c-74a7-439b-85a6-9770f63ac861)
+<img src="https://github.com/user-attachments/assets/7792ee0c-74a7-439b-85a6-9770f63ac861" height="500">

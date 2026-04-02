@@ -1,3 +1,7 @@
+## 1.2.0
+
+- Bugs fixed for the `google_fonts` dependency.
+
 ## 1.1.2
 
 - Bugs fixed for the `border` property.

@@ -51,13 +51,12 @@ class VerificationCodeFieldExample extends StatelessWidget {
         appBar: AppBar(
           title: const Text('Verification Code Field'),
         ),
-        body: Padding(
+        body: SingleChildScrollView(
           padding: const EdgeInsets.all(16.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const Text('Example #1'),
                   Center(
@@ -65,6 +64,18 @@ class VerificationCodeFieldExample extends StatelessWidget {
                       autoFocus: true,
                       cleanAllAtOnce: true,
                       onSubmit: _handleSubmit1,
+                      showCursor: false,
+                      focusedFillColor: Colors.blue.shade50,
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide:
+                            const BorderSide(color: Colors.blue, width: 2),
+                      ),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide:
+                            const BorderSide(color: Colors.grey, width: 2),
+                      ),
                       onChanged: (p0) {
                         debugPrint(p0);
                       },
@@ -134,7 +145,7 @@ class VerificationCodeFieldExample extends StatelessWidget {
                   ),
                 ),
               ),
-              const SizedBox(height: 10),
+              const SizedBox(height: 500),
               ValueListenableBuilder(
                 valueListenable: _enteredCode2,
                 builder: (context, value, child) => Text(
@@ -144,7 +155,7 @@ class VerificationCodeFieldExample extends StatelessWidget {
                   ),
                 ),
               ),
-              const SizedBox(height: 10),
+              const SizedBox(height: 500),
               ValueListenableBuilder(
                 valueListenable: _enteredCode3,
                 builder: (context, value, child) => Text(

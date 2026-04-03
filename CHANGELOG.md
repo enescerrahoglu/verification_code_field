@@ -1,3 +1,8 @@
+## 1.2.1
+
+- Fixed the iOS keyboard reopening/flickering issue during digit transitions.
+- Added the `focusedFillColor` property.
+
 ## 1.2.0
 
 - Bugs fixed for the `google_fonts` dependency.

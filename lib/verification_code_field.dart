@@ -29,6 +29,9 @@ class VerificationCodeField extends StatefulWidget {
   /// Background color for each TextField box when `filled` is true.
   final Color? fillColor;
 
+  /// Background color for the active focused TextField box.
+  final Color? focusedFillColor;
+
   /// Border style for each TextField box.
   final InputBorder? border;
 
@@ -57,6 +60,7 @@ class VerificationCodeField extends StatefulWidget {
     this.showCursor = false,
     this.filled,
     this.fillColor,
+    this.focusedFillColor,
     this.border,
     this.focusedBorder,
     this.cursorColor,
@@ -69,194 +73,320 @@ class VerificationCodeField extends StatefulWidget {
   State<VerificationCodeField> createState() => _VerificationCodeFieldState();
 }
 
-class _VerificationCodeFieldState extends State<VerificationCodeField> {
-  late List<TextEditingController> _controllers;
-  late List<FocusNode> _focusNodes;
+class _VerificationCodeFieldState extends State<VerificationCodeField>
+    with SingleTickerProviderStateMixin {
+  late TextEditingController _controller;
+  late FocusNode _focusNode;
+  late AnimationController _cursorController;
+
+  // Track previous length to detect deletions for cleanAllAtOnce
+  int _previousLength = 0;
 
   @override
   void initState() {
-    _controllers = List.generate(
-      widget.codeDigit.digit,
-      (index) => TextEditingController(text: ' '),
-    );
-    _focusNodes = List.generate(widget.codeDigit.digit, (index) => FocusNode());
+    super.initState();
+    _controller = TextEditingController();
+    _focusNode = FocusNode();
+    _cursorController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 500),
+    )..repeat(reverse: true);
+
+    // Rebuild when focus changes so the active-box border updates
+    _focusNode.addListener(() {
+      if (mounted) setState(() {});
+    });
 
     if (widget.autoFocus) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        FocusScope.of(context).requestFocus(_focusNodes[0]);
+        _focusNode.requestFocus();
       });
     }
-
-    super.initState();
   }
 
   @override
   void dispose() {
-    for (var controller in _controllers) {
-      controller.dispose();
-    }
-    for (var focusNode in _focusNodes) {
-      focusNode.dispose();
-    }
+    _cursorController.dispose();
+    _controller.dispose();
+    _focusNode.dispose();
     super.dispose();
   }
 
-  /// Handles text changes in each TextField.
-  void _handleTextChanged(String value, int index) {
-    if (value.trim().length >= widget.codeDigit.digit) {
-      _handlePaste(value);
-    } else if (value.trim().isEmpty) {
-      if (widget.cleanAllAtOnce) {
-        _controllers.map((controller) => controller.text = ' ').toList();
-        FocusScope.of(context).requestFocus(_focusNodes[0]);
-        widget.onChanged?.call('');
-      } else {
-        _controllers[index].text = ' ';
-        if (index > 0) {
-          FocusScope.of(context).requestFocus(_focusNodes[index - 1]);
-        }
-        final currentValue =
-            _controllers.map((controller) => controller.text.trim()).join();
-        widget.onChanged?.call(currentValue);
-      }
-    } else {
-      _controllers[index].text = value.substring(value.length - 1);
-      final code =
-          _controllers.map((controller) => controller.text.trim()).join();
-      widget.onChanged?.call(code);
-      if (index == _controllers.length - 1) {
-        if (code.length == widget.codeDigit.digit) {
-          widget.onSubmit?.call(code);
-          FocusManager.instance.primaryFocus?.unfocus();
-        }
-      } else {
-        FocusScope.of(context).requestFocus(_focusNodes[index + 1]);
-      }
+  void _handleTextChanged(String value) {
+    final bool isDeletion = value.length < _previousLength;
+
+    // cleanAllAtOnce: any deletion clears everything and re-focuses first box
+    if (isDeletion && widget.cleanAllAtOnce) {
+      _controller.text = '';
+      _controller.selection = const TextSelection.collapsed(offset: 0);
+      _previousLength = 0;
+      widget.onChanged?.call('');
+      return;
+    }
+
+    // Clamp to max digits (handles paste)
+    if (value.length > widget.codeDigit.digit) {
+      value = value.substring(0, widget.codeDigit.digit);
+    }
+
+    if (_controller.text != value) {
+      _controller.text = value;
+      _controller.selection = TextSelection.collapsed(offset: value.length);
+    }
+
+    _previousLength = value.length;
+    widget.onChanged?.call(value);
+
+    if (value.length == widget.codeDigit.digit) {
+      widget.onSubmit?.call(value);
+      _focusNode.unfocus();
     }
   }
 
-  /// Handles pasted text and distributes digits across fields, triggering submit if completed.
-  void _handlePaste(String value) {
-    _controllers.map((controller) => controller.text = ' ').toList();
-    FocusScope.of(context).requestFocus(_focusNodes[0]);
+  void _showPasteMenu(Offset globalPosition) {
+    if (widget.enabled == false) return;
+    final OverlayState? overlay = Overlay.maybeOf(context);
+    if (overlay == null) return;
 
-    final digits = RegExp(r'\d')
-        .allMatches(value)
-        .map((match) => match.group(0)!)
-        .toList();
+    OverlayEntry? entry;
 
-    final limitedDigits = digits.length > widget.codeDigit.digit
-        ? digits.sublist(digits.length - widget.codeDigit.digit)
-        : digits;
+    entry = OverlayEntry(
+      builder: (context) {
+        return Material(
+          type: MaterialType.transparency,
+          child: Stack(
+            children: [
+              Positioned.fill(
+                child: GestureDetector(
+                  onTap: () => entry?.remove(),
+                  behavior: HitTestBehavior.opaque,
+                ),
+              ),
+              AdaptiveTextSelectionToolbar.buttonItems(
+                anchors: TextSelectionToolbarAnchors(
+                  primaryAnchor: globalPosition,
+                ),
+                buttonItems: [
+                  ContextMenuButtonItem(
+                    onPressed: () async {
+                      entry?.remove();
+                      final ClipboardData? data =
+                          await Clipboard.getData(Clipboard.kTextPlain);
+                      if (data?.text != null && data!.text!.isNotEmpty) {
+                        String pasted =
+                            data.text!.replaceAll(RegExp(r'[^0-9]'), '');
+                        String newText = _controller.text + pasted;
+                        _handleTextChanged(newText);
+                      }
+                    },
+                    type: ContextMenuButtonType.paste,
+                  ),
+                ],
+              ),
+            ],
+          ),
+        );
+      },
+    );
 
-    for (int i = 0;
-        i < widget.codeDigit.digit && i < limitedDigits.length;
-        i++) {
-      _controllers[i].text = limitedDigits[i];
+    overlay.insert(entry);
+  }
+
+  /// Tapping a specific box trims the code to that index so the next
+  /// keypress lands on the tapped box.
+  void _handleBoxTap(int index) {
+    if (widget.enabled == false) return;
+    _focusNode.requestFocus();
+
+    final String current = _controller.text;
+    if (index < current.length) {
+      _controller.text = current.substring(0, index);
+      _controller.selection = TextSelection.collapsed(offset: index);
+      _previousLength = index;
+      widget.onChanged?.call(_controller.text);
+    } else {
+      _controller.selection = TextSelection.collapsed(offset: current.length);
     }
-
-    if (limitedDigits.length == widget.codeDigit.digit) {
-      widget.onSubmit?.call(
-          _controllers.map((controller) => controller.text.trim()).join());
-      FocusManager.instance.primaryFocus?.unfocus();
-    }
-    final currentValue =
-        _controllers.map((controller) => controller.text.trim()).join();
-    widget.onChanged?.call(currentValue);
   }
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      height: (MediaQuery.of(context).size.width / 6) - 24,
-      child: ListView.separated(
-        itemCount: widget.codeDigit.digit,
-        shrinkWrap: true,
-        scrollDirection: Axis.horizontal,
-        separatorBuilder: (context, index) => SizedBox(
-            width: (widget.codeDigit == CodeDigit.six &&
-                    widget.tripleSeparated &&
-                    index == 2)
-                ? 20
-                : widget.tripleSeparated
-                    ? 5
-                    : 10),
-        itemBuilder: (context, index) {
-          return Center(
-            child: SizedBox(
-              width: (MediaQuery.of(context).size.width / 6) - 24,
-              child: TextField(
-                enabled: widget.enabled,
-                controller: _controllers[index],
-                focusNode: _focusNodes[index],
-                showCursor: widget.showCursor,
-                cursorColor: widget.cursorColor,
-                // enableInteractiveSelection: false,
-                contextMenuBuilder: (context, editableTextState) {
-                  List<ContextMenuButtonItem> items = editableTextState
-                      .contextMenuButtonItems
-                      .where((element) =>
-                          element.type == ContextMenuButtonType.paste)
-                      .toList();
-                  return AdaptiveTextSelectionToolbar.buttonItems(
-                    anchors: editableTextState.contextMenuAnchors,
-                    buttonItems: items,
-                  );
-                },
-                spellCheckConfiguration: SpellCheckConfiguration(
-                  spellCheckSuggestionsToolbarBuilder:
-                      (context, editableTextState) {
-                    List<ContextMenuButtonItem> items = editableTextState
-                        .contextMenuButtonItems
-                        .where((element) =>
-                            element.type == ContextMenuButtonType.paste)
-                        .toList();
-                    return AdaptiveTextSelectionToolbar.buttonItems(
-                      anchors: editableTextState.contextMenuAnchors,
-                      buttonItems: items,
-                    );
-                  },
+    final bool isEnabled = widget.enabled != false;
+    final double boxSize = (MediaQuery.of(context).size.width / 6) - 24;
+    final bool isFocused = _focusNode.hasFocus;
+
+    final InputBorder defaultBorder = widget.border ??
+        OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10.0),
+        );
+    final InputBorder activeBorder = widget.focusedBorder ?? defaultBorder;
+
+    return Container(
+      color: Colors.transparent,
+      height: boxSize,
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          Positioned.fill(
+            child: IgnorePointer(
+              child: Opacity(
+                opacity: 0,
+                alwaysIncludeSemantics: true,
+                child: TextField(
+                  controller: _controller,
+                  focusNode: _focusNode,
+                  enabled: isEnabled,
+                  showCursor: widget.showCursor,
+                  cursorColor: widget.cursorColor,
+                  keyboardType: TextInputType.number,
+                  textInputAction: TextInputAction.done,
+                  inputFormatters: [
+                    FilteringTextInputFormatter.digitsOnly,
+                    LengthLimitingTextInputFormatter(widget.codeDigit.digit),
+                  ],
+                  onChanged: _handleTextChanged,
                 ),
-                onTapAlwaysCalled: true,
-                style: widget.textStyle ??
-                    TextStyle(
-                      fontSize: 26,
-                      fontWeight: FontWeight.bold,
-                      color: Theme.of(context).colorScheme.primary,
-                      fontFamily:
-                          GoogleFonts.sourceCodePro(fontWeight: FontWeight.bold)
-                              .fontFamily,
-                    ),
-                keyboardType: TextInputType.number,
-                textInputAction: TextInputAction.next,
-                textAlign: TextAlign.center,
-                inputFormatters: [
-                  FilteringTextInputFormatter.digitsOnly,
-                ],
-                decoration: InputDecoration(
-                  filled: widget.filled,
-                  fillColor: widget.fillColor,
-                  contentPadding: const EdgeInsetsDirectional.all(0),
-                  focusedBorder: widget.focusedBorder,
-                  enabledBorder: widget.border,
-                  border: widget.border ??
-                      OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10.0),
-                      ),
-                ),
-                onChanged: (value) => _handleTextChanged(value, index),
-                onTap: () {
-                  _controllers[index].selection = TextSelection(
-                      baseOffset: 1,
-                      extentOffset: _controllers[index].text.length);
-                },
               ),
             ),
-          );
-        },
+          ),
+
+          // Visual digit boxes painted with CustomPaint so border switching
+          // is reliable regardless of InputDecorator internal state.
+          ValueListenableBuilder<TextEditingValue>(
+            valueListenable: _controller,
+            builder: (context, value, _) {
+              final String code = value.text;
+
+              final List<Widget> boxes = [];
+              for (int i = 0; i < widget.codeDigit.digit; i++) {
+                final bool isActiveBox = isFocused && i == code.length;
+                final bool isFilled = i < code.length;
+
+                // Separator
+                if (i > 0) {
+                  final bool isTripleSep = widget.codeDigit == CodeDigit.six &&
+                      widget.tripleSeparated &&
+                      i == 3;
+                  boxes.add(
+                    SizedBox(
+                        width: isTripleSep
+                            ? 20
+                            : (widget.tripleSeparated ? 5 : 10)),
+                  );
+                }
+
+                boxes.add(
+                  GestureDetector(
+                    key: ValueKey('digit_box_$i'),
+                    onTap: () => _handleBoxTap(i),
+                    child: SizedBox(
+                      width: boxSize,
+                      height: boxSize,
+                      child: CustomPaint(
+                        painter: _DigitBoxPainter(
+                          border: isActiveBox ? activeBorder : defaultBorder,
+                          filled: widget.filled ??
+                              (widget.fillColor != null ||
+                                  widget.focusedFillColor != null),
+                          fillColor: isActiveBox
+                              ? (widget.focusedFillColor ?? widget.fillColor)
+                              : widget.fillColor,
+                        ),
+                        child: Center(
+                          child: isFilled
+                              ? Text(
+                                  code[i],
+                                  style: widget.textStyle ??
+                                      TextStyle(
+                                        fontSize: 26,
+                                        fontWeight: FontWeight.bold,
+                                        color: Theme.of(context)
+                                            .colorScheme
+                                            .primary,
+                                        fontFamily:
+                                            GoogleFonts.firaCode().fontFamily,
+                                      ),
+                                  textAlign: TextAlign.center,
+                                )
+                              : (widget.showCursor == true && isActiveBox)
+                                  ? FadeTransition(
+                                      opacity: _cursorController,
+                                      child: Container(
+                                        width: 2,
+                                        height:
+                                            widget.textStyle?.fontSize ?? 26.0,
+                                        color: widget.cursorColor ??
+                                            Theme.of(context)
+                                                .colorScheme
+                                                .primary,
+                                      ),
+                                    )
+                                  : null,
+                        ),
+                      ),
+                    ),
+                  ),
+                );
+              }
+
+              return GestureDetector(
+                behavior: HitTestBehavior.translucent,
+                onLongPressStart: (details) =>
+                    _showPasteMenu(details.globalPosition),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: boxes,
+                ),
+              );
+            },
+          ),
+        ],
       ),
     );
   }
+}
+
+/// Paints a digit box using the provided [InputBorder] directly via its
+/// [InputBorder.paint] method — bypassing [InputDecorator]'s internal
+/// animation/state so border switching is always immediate and correct.
+class _DigitBoxPainter extends CustomPainter {
+  const _DigitBoxPainter({
+    required this.border,
+    required this.filled,
+    this.fillColor,
+  });
+
+  final InputBorder border;
+  final bool filled;
+  final Color? fillColor;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final Rect rect = Offset.zero & size;
+
+    // Fill background if requested
+    if (filled && fillColor != null) {
+      final paint = Paint()..color = fillColor!;
+      if (border is OutlineInputBorder) {
+        final rrect = (border as OutlineInputBorder)
+            .borderRadius
+            .resolve(TextDirection.ltr)
+            .toRRect(rect);
+        canvas.drawRRect(rrect, paint);
+      } else {
+        canvas.drawRect(rect, paint);
+      }
+    }
+
+    // Paint the border itself
+    border.paint(canvas, rect, textDirection: TextDirection.ltr);
+  }
+
+  @override
+  bool shouldRepaint(_DigitBoxPainter old) =>
+      old.border != border ||
+      old.filled != filled ||
+      old.fillColor != fillColor;
 }
 
 /// Enum to represent the number of digits for the Verification Code.

@@ -1,7 +1,8 @@
-## 1.2.1
+## 1.2.2
 
 - Fixed the iOS keyboard reopening/flickering issue during digit transitions.
 - Added the `focusedFillColor` property.
+- Added the `fontFamily` property.
 
 ## 1.2.0
 

@@ -20,6 +20,9 @@ class VerificationCodeField extends StatefulWidget {
   /// Text style for the input digits.
   final TextStyle? textStyle;
 
+  /// Font family for the input digits text.
+  final String? fontFamily;
+
   /// Whether to display the cursor in the TextFields. Default is false.
   final bool? showCursor;
 
@@ -57,6 +60,7 @@ class VerificationCodeField extends StatefulWidget {
     this.onChanged,
     this.enabled,
     this.textStyle,
+    this.fontFamily,
     this.showCursor = false,
     this.filled,
     this.fillColor,
@@ -303,7 +307,7 @@ class _VerificationCodeFieldState extends State<VerificationCodeField>
                                         color: Theme.of(context)
                                             .colorScheme
                                             .primary,
-                                        fontFamily:
+                                        fontFamily: widget.fontFamily ??
                                             GoogleFonts.firaCode().fontFamily,
                                       ),
                                   textAlign: TextAlign.center,

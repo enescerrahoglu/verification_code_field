@@ -57,11 +57,13 @@ class VerificationCodeFieldExample extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const Text('Example #1'),
                   Center(
                     child: VerificationCodeField(
                       autoFocus: true,
+                      fieldSize: 48,
                       cleanAllAtOnce: true,
                       onSubmit: _handleSubmit1,
                       showCursor: false,
@@ -135,7 +137,7 @@ class VerificationCodeFieldExample extends StatelessWidget {
                   ),
                 ],
               ),
-              const SizedBox(height: 30),
+              const SizedBox(height: 50),
               ValueListenableBuilder(
                 valueListenable: _enteredCode1,
                 builder: (context, value, child) => Text(
@@ -145,7 +147,7 @@ class VerificationCodeFieldExample extends StatelessWidget {
                   ),
                 ),
               ),
-              const SizedBox(height: 500),
+              const SizedBox(height: 50),
               ValueListenableBuilder(
                 valueListenable: _enteredCode2,
                 builder: (context, value, child) => Text(
@@ -155,7 +157,7 @@ class VerificationCodeFieldExample extends StatelessWidget {
                   ),
                 ),
               ),
-              const SizedBox(height: 500),
+              const SizedBox(height: 50),
               ValueListenableBuilder(
                 valueListenable: _enteredCode3,
                 builder: (context, value, child) => Text(

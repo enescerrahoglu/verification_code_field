@@ -1,3 +1,7 @@
+## 1.2.3
+
+- Added the `fieldSize` property.
+
 ## 1.2.2
 
 - Fixed the iOS keyboard reopening/flickering issue during digit transitions.

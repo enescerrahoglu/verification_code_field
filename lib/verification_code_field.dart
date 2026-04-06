@@ -53,6 +53,9 @@ class VerificationCodeField extends StatefulWidget {
   /// Whether the first TextField should automatically gain focus when the widget is built. Default is false.
   final bool autoFocus;
 
+  /// The size of each digit field. Default is 36.
+  final double fieldSize;
+
   const VerificationCodeField({
     super.key,
     this.codeDigit = CodeDigit.four,
@@ -71,6 +74,7 @@ class VerificationCodeField extends StatefulWidget {
     this.cleanAllAtOnce = false,
     this.tripleSeparated = false,
     this.autoFocus = false,
+    this.fieldSize = 36,
   });
 
   @override
@@ -216,7 +220,7 @@ class _VerificationCodeFieldState extends State<VerificationCodeField>
   @override
   Widget build(BuildContext context) {
     final bool isEnabled = widget.enabled != false;
-    final double boxSize = (MediaQuery.of(context).size.width / 6) - 24;
+    final double fieldSize = widget.fieldSize;
     final bool isFocused = _focusNode.hasFocus;
 
     final InputBorder defaultBorder = widget.border ??
@@ -227,7 +231,7 @@ class _VerificationCodeFieldState extends State<VerificationCodeField>
 
     return Container(
       color: Colors.transparent,
-      height: boxSize,
+      height: fieldSize,
       child: Stack(
         alignment: Alignment.center,
         children: [
@@ -284,8 +288,8 @@ class _VerificationCodeFieldState extends State<VerificationCodeField>
                     key: ValueKey('digit_box_$i'),
                     onTap: () => _handleBoxTap(i),
                     child: SizedBox(
-                      width: boxSize,
-                      height: boxSize,
+                      width: fieldSize,
+                      height: fieldSize,
                       child: CustomPaint(
                         painter: _DigitBoxPainter(
                           border: isActiveBox ? activeBorder : defaultBorder,

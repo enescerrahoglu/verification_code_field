@@ -18,7 +18,8 @@ flutter pub add verification_code_field
 ```
 
 ## Usage
-![WhatsApp Image 2024-11-10 at 19 49 36](https://github.com/user-attachments/assets/bb3ba272-d316-4d1c-bac8-0def51657bce)
+<img width="1280" height="884" alt="verification_code_field" src="https://github.com/user-attachments/assets/6937a7cf-f9e1-46ba-8fdc-e678d4913ab9" />
+
 
 ```dart
 final controller = VerificationCodeController();

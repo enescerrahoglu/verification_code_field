@@ -16,17 +16,36 @@ class MyApp extends StatelessWidget {
         primarySwatch: Colors.blue,
       ),
       debugShowCheckedModeBanner: false,
-      home: VerificationCodeFieldExample(),
+      home: const VerificationCodeFieldExample(),
     );
   }
 }
 
-class VerificationCodeFieldExample extends StatelessWidget {
-  VerificationCodeFieldExample({super.key});
+class VerificationCodeFieldExample extends StatefulWidget {
+  const VerificationCodeFieldExample({super.key});
 
+  @override
+  State<VerificationCodeFieldExample> createState() => _VerificationCodeFieldExampleState();
+}
+
+class _VerificationCodeFieldExampleState extends State<VerificationCodeFieldExample> {
+  final VerificationCodeController _controller1 = VerificationCodeController();
+  final VerificationCodeController _controller2 = VerificationCodeController();
+  final VerificationCodeController _controller3 = VerificationCodeController();
   final ValueNotifier<String> _enteredCode1 = ValueNotifier<String>('');
   final ValueNotifier<String> _enteredCode2 = ValueNotifier<String>('');
   final ValueNotifier<String> _enteredCode3 = ValueNotifier<String>('');
+
+  @override
+  void dispose() {
+    _controller1.dispose();
+    _controller2.dispose();
+    _controller3.dispose();
+    _enteredCode1.dispose();
+    _enteredCode2.dispose();
+    _enteredCode3.dispose();
+    super.dispose();
+  }
 
   void _handleSubmit1(String code) {
     _enteredCode1.value = code;
@@ -62,36 +81,42 @@ class VerificationCodeFieldExample extends StatelessWidget {
                   const Text('Example #1'),
                   Center(
                     child: VerificationCodeField(
+                      controller: _controller1,
+                      clearOnTap: false,
                       autoFocus: true,
                       fieldSize: 48,
-                      cleanAllAtOnce: true,
+                      cleanAllAtOnce: false,
                       onSubmit: _handleSubmit1,
-                      showCursor: false,
+                      showCursor: true,
+                      cursorColor: Colors.blue,
                       focusedFillColor: Colors.blue.shade50,
+                      textStyle: Theme.of(context).textTheme.displaySmall?.copyWith(color: Colors.blue),
                       focusedBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
-                        borderSide:
-                            const BorderSide(color: Colors.blue, width: 2),
+                        borderSide: const BorderSide(color: Colors.blue, width: 2),
                       ),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
-                        borderSide:
-                            const BorderSide(color: Colors.grey, width: 2),
+                        borderSide: const BorderSide(color: Colors.grey, width: 2),
                       ),
                       onChanged: (p0) {
                         debugPrint(p0);
                       },
                     ),
                   ),
+                  const SizedBox(height: 12),
+                  _ControllerActions(controller: _controller1),
                 ],
               ),
               const SizedBox(height: 30),
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text('Example #2'),
+                  const Text('Example #2 — overwrite on tap'),
                   Center(
                     child: VerificationCodeField(
+                      controller: _controller2,
+                      clearOnTap: false,
                       tripleSeparated: true,
                       codeDigit: CodeDigit.six,
                       onSubmit: _handleSubmit2,
@@ -103,15 +128,12 @@ class VerificationCodeFieldExample extends StatelessWidget {
                       filled: true,
                       fillColor: Colors.blue.shade100,
                       cursorColor: Colors.blue,
-                      border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(100),
-                          borderSide: BorderSide.none),
-                      textStyle: const TextStyle(
-                          fontSize: 26,
-                          color: Colors.blue,
-                          fontWeight: FontWeight.bold),
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(100), borderSide: BorderSide.none),
+                      textStyle: const TextStyle(fontSize: 26, color: Colors.blue, fontWeight: FontWeight.bold),
                     ),
                   ),
+                  const SizedBox(height: 12),
+                  _ControllerActions(controller: _controller2),
                 ],
               ),
               const SizedBox(height: 30),
@@ -121,6 +143,7 @@ class VerificationCodeFieldExample extends StatelessWidget {
                   const Text('Example #3'),
                   Center(
                     child: VerificationCodeField(
+                      controller: _controller3,
                       tripleSeparated: true,
                       codeDigit: CodeDigit.six,
                       onSubmit: _handleSubmit3,
@@ -131,10 +154,11 @@ class VerificationCodeFieldExample extends StatelessWidget {
                       focusedBorder: const UnderlineInputBorder(
                         borderSide: BorderSide(color: Colors.green, width: 1.5),
                       ),
-                      textStyle:
-                          const TextStyle(fontSize: 20, color: Colors.green),
+                      textStyle: const TextStyle(fontSize: 20, color: Colors.green),
                     ),
                   ),
+                  const SizedBox(height: 12),
+                  _ControllerActions(controller: _controller3),
                 ],
               ),
               const SizedBox(height: 50),
@@ -171,6 +195,34 @@ class VerificationCodeFieldExample extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+}
+
+class _ControllerActions extends StatelessWidget {
+  const _ControllerActions({required this.controller});
+
+  final VerificationCodeController controller;
+
+  @override
+  Widget build(BuildContext context) {
+    return ListenableBuilder(
+      listenable: controller,
+      builder: (context, _) {
+        return Row(
+          children: [
+            Expanded(child: Text('Current value: ${controller.text}')),
+            TextButton(
+              onPressed: controller.focus,
+              child: const Text('Focus'),
+            ),
+            TextButton(
+              onPressed: controller.clear,
+              child: const Text('Clear'),
+            ),
+          ],
+        );
+      },
     );
   }
 }

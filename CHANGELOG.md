@@ -1,3 +1,10 @@
+## 1.2.5
+
+- Added `clearOnTap`. When it is true, tapping a box clears that box and every box after it. When it is false, the tapped box stays focused and keeps its digit; the next digit overwrites it and moves to the following box.
+- Added `VerificationCodeController` to read the current code, clear the fields with `clear()`, and focus the next empty box — or the last box when the code is complete — with `focus()`.
+- Entering a digit in the last box now unfocuses the field in both tap modes.
+- Removed `fontFamily`; set the font through `textStyle` instead.
+
 ## 1.2.4
 
 - Added the `fieldSize` property.

@@ -1,8 +1,7 @@
 # VerificationCodeField
 
 ### This package provides an input field that allows you to enter a 4, 5 or 6 digit verification code in your applications.
-![verification_code_field](https://github.com/user-attachments/assets/99e7c145-41af-4c50-a8b5-5eeda034de8b)
-
+<img width="1920" height="1080" alt="verification_code_field" src="https://github.com/user-attachments/assets/85ea2323-d90e-413c-afd6-32245160978a" />
 
 ## Features
 - **Customizable Digit Count:** Supports verification codes of 4, 5, or 6 digits with CodeDigit enumeration, making it flexible for different authentication requirements.

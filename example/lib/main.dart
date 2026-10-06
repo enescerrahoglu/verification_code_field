@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:verification_code_field/verification_code_field.dart';
 
@@ -5,193 +7,369 @@ void main() {
   runApp(const MyApp());
 }
 
+/// Seed for [ColorScheme.fromSeed]. All accents on the OTP screen derive
+/// from this primary and its Material 3 roles.
+const Color _seedPrimary = Color(0xFF1B6EF3);
+
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final ColorScheme colors = ColorScheme.fromSeed(
+      seedColor: _seedPrimary,
+      brightness: Brightness.light,
+    );
+
     return MaterialApp(
-      title: 'Verification Code Field Example',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-      ),
+      title: 'OTP Verification',
       debugShowCheckedModeBanner: false,
-      home: const VerificationCodeFieldExample(),
+      theme: ThemeData(
+        colorScheme: colors,
+        useMaterial3: true,
+        scaffoldBackgroundColor: colors.surface,
+        textTheme: Typography.blackMountainView.apply(
+          bodyColor: colors.onSurface,
+          displayColor: colors.onSurface,
+        ),
+        filledButtonTheme: FilledButtonThemeData(
+          style: FilledButton.styleFrom(
+            minimumSize: const Size.fromHeight(52),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(14),
+            ),
+            textStyle: const TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+              letterSpacing: 0.2,
+            ),
+          ),
+        ),
+      ),
+      home: const OtpVerificationPage(),
     );
   }
 }
 
-class VerificationCodeFieldExample extends StatefulWidget {
-  const VerificationCodeFieldExample({super.key});
+class OtpVerificationPage extends StatefulWidget {
+  const OtpVerificationPage({super.key});
 
   @override
-  State<VerificationCodeFieldExample> createState() => _VerificationCodeFieldExampleState();
+  State<OtpVerificationPage> createState() => _OtpVerificationPageState();
 }
 
-class _VerificationCodeFieldExampleState extends State<VerificationCodeFieldExample> {
-  final VerificationCodeController _controller1 = VerificationCodeController();
-  final VerificationCodeController _controller2 = VerificationCodeController();
-  final VerificationCodeController _controller3 = VerificationCodeController();
-  final ValueNotifier<String> _enteredCode1 = ValueNotifier<String>('');
-  final ValueNotifier<String> _enteredCode2 = ValueNotifier<String>('');
-  final ValueNotifier<String> _enteredCode3 = ValueNotifier<String>('');
+class _OtpVerificationPageState extends State<OtpVerificationPage> {
+  static const int _codeLength = 6;
+  static const int _resendSeconds = 45;
+  static const String _maskedDestination = '+90 ••• ••• 12 34';
+
+  final VerificationCodeController _controller = VerificationCodeController();
+
+  Timer? _resendTimer;
+  int _secondsLeft = _resendSeconds;
+  bool _isVerifying = false;
+  bool _codeComplete = false;
+  String? _errorText;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller.addListener(_onCodeChanged);
+    _startResendCountdown();
+  }
 
   @override
   void dispose() {
-    _controller1.dispose();
-    _controller2.dispose();
-    _controller3.dispose();
-    _enteredCode1.dispose();
-    _enteredCode2.dispose();
-    _enteredCode3.dispose();
+    _resendTimer?.cancel();
+    _controller.removeListener(_onCodeChanged);
+    _controller.dispose();
     super.dispose();
   }
 
-  void _handleSubmit1(String code) {
-    _enteredCode1.value = code;
-    debugPrint('#1 Entered Code: $code');
+  void _onCodeChanged() {
+    final bool complete = _controller.text.length == _codeLength;
+    if (complete != _codeComplete || _errorText != null) {
+      setState(() {
+        _codeComplete = complete;
+        _errorText = null;
+      });
+    }
   }
 
-  void _handleSubmit2(String code) {
-    _enteredCode2.value = code;
-    debugPrint('#2 Entered Code: $code');
+  void _startResendCountdown() {
+    _resendTimer?.cancel();
+    setState(() => _secondsLeft = _resendSeconds);
+    _resendTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (_secondsLeft <= 1) {
+        timer.cancel();
+        setState(() => _secondsLeft = 0);
+        return;
+      }
+      setState(() => _secondsLeft -= 1);
+    });
   }
 
-  void _handleSubmit3(String code) {
-    _enteredCode3.value = code;
-    debugPrint('#3 Entered Code: $code');
+  Future<void> _verify() async {
+    if (!_codeComplete || _isVerifying) return;
+
+    FocusScope.of(context).unfocus();
+    setState(() {
+      _isVerifying = true;
+      _errorText = null;
+    });
+
+    await Future<void>.delayed(const Duration(milliseconds: 900));
+    if (!mounted) return;
+
+    // Demo rule: any code ending with an even digit succeeds.
+    final String code = _controller.text;
+    final bool success = int.parse(code[_codeLength - 1]).isEven;
+
+    setState(() => _isVerifying = false);
+
+    if (success) {
+      await showDialog<void>(
+        context: context,
+        builder: (context) {
+          final ColorScheme colors = Theme.of(context).colorScheme;
+          return AlertDialog(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20),
+            ),
+            icon: Icon(
+              Icons.check_circle_rounded,
+              color: colors.primary,
+              size: 40,
+            ),
+            title: const Text('Verified'),
+            content: const Text(
+              'Phone number $_maskedDestination is confirmed.',
+              textAlign: TextAlign.center,
+            ),
+            actionsAlignment: MainAxisAlignment.center,
+            actions: [
+              FilledButton(
+                onPressed: () => Navigator.of(context).pop(),
+                child: const Text('Continue'),
+              ),
+            ],
+          );
+        },
+      );
+    } else {
+      setState(() {
+        _errorText = 'That code is incorrect. Try again.';
+      });
+      _controller.clear();
+      _controller.focus();
+    }
+  }
+
+  void _resendCode() {
+    if (_secondsLeft > 0) return;
+    _controller.clear();
+    _startResendCountdown();
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        behavior: SnackBarBehavior.floating,
+        backgroundColor: Theme.of(context).colorScheme.primary,
+        content: const Text('A new code was sent to $_maskedDestination'),
+      ),
+    );
+    _controller.focus();
   }
 
   @override
   Widget build(BuildContext context) {
+    final ThemeData theme = Theme.of(context);
+    final ColorScheme colors = theme.colorScheme;
+    final TextTheme text = theme.textTheme;
+    final MediaQueryData media = MediaQuery.of(context);
+    final double bottomInset = media.viewInsets.bottom;
+
     return GestureDetector(
       onTap: () => FocusScope.of(context).unfocus(),
       child: Scaffold(
-        appBar: AppBar(
-          title: const Text('Verification Code Field'),
-        ),
-        body: SingleChildScrollView(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+        body: DecoratedBox(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [
+                colors.primaryContainer.withValues(alpha: 0.55),
+                colors.surface,
+                colors.surface,
+              ],
+              stops: const [0, 0.38, 1],
+            ),
+          ),
+          child: SafeArea(
+            child: AnimatedPadding(
+              duration: const Duration(milliseconds: 180),
+              curve: Curves.easeOut,
+              padding: EdgeInsets.only(bottom: bottomInset > 0 ? 8 : 0),
+              child: Column(
                 children: [
-                  const Text('Example #1'),
-                  Center(
-                    child: VerificationCodeField(
-                      controller: _controller1,
-                      clearOnTap: false,
-                      autoFocus: true,
-                      fieldSize: 48,
-                      cleanAllAtOnce: false,
-                      onSubmit: _handleSubmit1,
-                      showCursor: true,
-                      cursorColor: Colors.blue,
-                      focusedFillColor: Colors.blue.shade50,
-                      textStyle: Theme.of(context).textTheme.displaySmall?.copyWith(color: Colors.blue),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: const BorderSide(color: Colors.blue, width: 2),
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: IconButton(
+                      onPressed: () =>
+                          ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          behavior: SnackBarBehavior.floating,
+                          backgroundColor: colors.primary,
+                          content: const Text('Back to sign in'),
+                        ),
                       ),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: const BorderSide(color: Colors.grey, width: 2),
+                      icon: Icon(
+                        Icons.arrow_back_rounded,
+                        color: colors.primary,
                       ),
-                      onChanged: (p0) {
-                        debugPrint(p0);
-                      },
+                      tooltip: 'Back',
                     ),
                   ),
-                  const SizedBox(height: 12),
-                  _ControllerActions(controller: _controller1),
-                ],
-              ),
-              const SizedBox(height: 30),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text('Example #2 — overwrite on tap'),
-                  Center(
-                    child: VerificationCodeField(
-                      controller: _controller2,
-                      clearOnTap: false,
-                      tripleSeparated: true,
-                      codeDigit: CodeDigit.six,
-                      onSubmit: _handleSubmit2,
-                      onChanged: (p0) {
-                        debugPrint(p0);
-                      },
-                      enabled: true,
-                      showCursor: true,
-                      filled: true,
-                      fillColor: Colors.blue.shade100,
-                      cursorColor: Colors.blue,
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(100), borderSide: BorderSide.none),
-                      textStyle: const TextStyle(fontSize: 26, color: Colors.blue, fontWeight: FontWeight.bold),
+                  Expanded(
+                    child: SingleChildScrollView(
+                      padding: const EdgeInsets.fromLTRB(24, 8, 24, 24),
+                      child: Column(
+                        children: [
+                          const SizedBox(height: 12),
+                          _OtpMark(colors: colors),
+                          const SizedBox(height: 28),
+                          Text(
+                            'Enter verification code',
+                            textAlign: TextAlign.center,
+                            style: text.headlineSmall?.copyWith(
+                              fontWeight: FontWeight.w700,
+                              letterSpacing: -0.4,
+                              color: colors.onSurface,
+                            ),
+                          ),
+                          const SizedBox(height: 10),
+                          Text.rich(
+                            TextSpan(
+                              style: text.bodyLarge?.copyWith(
+                                height: 1.45,
+                                color: colors.onSurfaceVariant,
+                              ),
+                              children: [
+                                const TextSpan(
+                                  text: 'We sent a 6-digit code to\n',
+                                ),
+                                TextSpan(
+                                  text: _maskedDestination,
+                                  style: TextStyle(
+                                    color: colors.primary,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                          const SizedBox(height: 36),
+                          VerificationCodeField(
+                            controller: _controller,
+                            codeDigit: CodeDigit.six,
+                            autoFocus: true,
+                            clearOnTap: false,
+                            fieldSize: 48,
+                            showCursor: true,
+                            cursorColor: colors.primary,
+                            fillColor: colors.surface,
+                            focusedFillColor:
+                                colors.primaryContainer.withValues(alpha: 0.45),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: BorderSide(
+                                color: colors.outlineVariant,
+                                width: 1.4,
+                              ),
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: BorderSide(
+                                color: colors.primary,
+                                width: 2,
+                              ),
+                            ),
+                            textStyle: text.headlineSmall?.copyWith(
+                              fontWeight: FontWeight.w700,
+                              color: colors.primary,
+                              letterSpacing: 1,
+                            ),
+                            onSubmit: (_) => _verify(),
+                          ),
+                          AnimatedSize(
+                            duration: const Duration(milliseconds: 200),
+                            child: _errorText == null
+                                ? const SizedBox(height: 16)
+                                : Padding(
+                                    padding: const EdgeInsets.only(
+                                      top: 14,
+                                      bottom: 2,
+                                    ),
+                                    child: Text(
+                                      _errorText!,
+                                      textAlign: TextAlign.center,
+                                      style: text.bodyMedium?.copyWith(
+                                        color: colors.error,
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
+                                  ),
+                          ),
+                          const SizedBox(height: 8),
+                          _ResendRow(
+                            secondsLeft: _secondsLeft,
+                            onResend: _resendCode,
+                          ),
+                          const SizedBox(height: 28),
+                          FilledButton(
+                            onPressed:
+                                _codeComplete && !_isVerifying ? _verify : null,
+                            child: _isVerifying
+                                ? SizedBox(
+                                    width: 22,
+                                    height: 22,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2.4,
+                                      color: colors.onPrimary,
+                                    ),
+                                  )
+                                : const Text('Verify'),
+                          ),
+                          const SizedBox(height: 18),
+                          TextButton(
+                            onPressed: () {
+                              _controller.clear();
+                              _controller.focus();
+                            },
+                            child: Text(
+                              'Clear code',
+                              style: TextStyle(
+                                color: colors.primary,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
-                  const SizedBox(height: 12),
-                  _ControllerActions(controller: _controller2),
-                ],
-              ),
-              const SizedBox(height: 30),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text('Example #3'),
-                  Center(
-                    child: VerificationCodeField(
-                      controller: _controller3,
-                      tripleSeparated: true,
-                      codeDigit: CodeDigit.six,
-                      onSubmit: _handleSubmit3,
-                      enabled: true,
-                      border: const UnderlineInputBorder(
-                        borderSide: BorderSide(color: Colors.green, width: 1.5),
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(24, 0, 24, 16),
+                    child: Text(
+                      'Demo tip: codes ending with an even digit succeed.',
+                      textAlign: TextAlign.center,
+                      style: text.bodySmall?.copyWith(
+                        color: colors.onSurfaceVariant.withValues(alpha: 0.75),
                       ),
-                      focusedBorder: const UnderlineInputBorder(
-                        borderSide: BorderSide(color: Colors.green, width: 1.5),
-                      ),
-                      textStyle: const TextStyle(fontSize: 20, color: Colors.green),
                     ),
                   ),
-                  const SizedBox(height: 12),
-                  _ControllerActions(controller: _controller3),
                 ],
               ),
-              const SizedBox(height: 50),
-              ValueListenableBuilder(
-                valueListenable: _enteredCode1,
-                builder: (context, value, child) => Text(
-                  '#1 Entered Code: ${_enteredCode1.value}',
-                  style: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 50),
-              ValueListenableBuilder(
-                valueListenable: _enteredCode2,
-                builder: (context, value, child) => Text(
-                  '#2 Entered Code: ${_enteredCode2.value}',
-                  style: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 50),
-              ValueListenableBuilder(
-                valueListenable: _enteredCode3,
-                builder: (context, value, child) => Text(
-                  '#3 Entered Code: ${_enteredCode3.value}',
-                  style: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-            ],
+            ),
           ),
         ),
       ),
@@ -199,30 +377,84 @@ class _VerificationCodeFieldExampleState extends State<VerificationCodeFieldExam
   }
 }
 
-class _ControllerActions extends StatelessWidget {
-  const _ControllerActions({required this.controller});
+class _OtpMark extends StatelessWidget {
+  const _OtpMark({required this.colors});
 
-  final VerificationCodeController controller;
+  final ColorScheme colors;
 
   @override
   Widget build(BuildContext context) {
-    return ListenableBuilder(
-      listenable: controller,
-      builder: (context, _) {
-        return Row(
-          children: [
-            Expanded(child: Text('Current value: ${controller.text}')),
-            TextButton(
-              onPressed: controller.focus,
-              child: const Text('Focus'),
-            ),
-            TextButton(
-              onPressed: controller.clear,
-              child: const Text('Clear'),
-            ),
+    return Container(
+      width: 88,
+      height: 88,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        gradient: RadialGradient(
+          colors: [
+            colors.primary.withValues(alpha: 0.18),
+            colors.primaryContainer.withValues(alpha: 0.55),
           ],
-        );
-      },
+        ),
+        border: Border.all(
+          color: colors.primary.withValues(alpha: 0.18),
+        ),
+      ),
+      child: Icon(
+        Icons.lock_outline_rounded,
+        size: 36,
+        color: colors.primary,
+      ),
+    );
+  }
+}
+
+class _ResendRow extends StatelessWidget {
+  const _ResendRow({
+    required this.secondsLeft,
+    required this.onResend,
+  });
+
+  final int secondsLeft;
+  final VoidCallback onResend;
+
+  @override
+  Widget build(BuildContext context) {
+    final ColorScheme colors = Theme.of(context).colorScheme;
+    final TextTheme text = Theme.of(context).textTheme;
+    final bool canResend = secondsLeft == 0;
+    final String clock = '0:${secondsLeft.toString().padLeft(2, '0')}';
+
+    if (canResend) {
+      return TextButton(
+        onPressed: onResend,
+        child: Text(
+          'Resend code',
+          style: text.titleSmall?.copyWith(
+            color: colors.primary,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+      );
+    }
+
+    return Text.rich(
+      TextSpan(
+        style: text.bodyMedium?.copyWith(
+          color: colors.onSurfaceVariant,
+        ),
+        children: [
+          const TextSpan(text: 'Resend code in '),
+          TextSpan(
+            text: clock,
+            style: TextStyle(
+              color: colors.primary,
+              fontWeight: FontWeight.w700,
+              fontFeatures: const [FontFeature.tabularFigures()],
+            ),
+          ),
+        ],
+      ),
+      textAlign: TextAlign.center,
     );
   }
 }

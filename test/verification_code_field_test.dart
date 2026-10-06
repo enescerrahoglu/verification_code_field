@@ -201,8 +201,7 @@ void main() {
       expect(_selectionOf(tester).baseOffset, 1);
     });
 
-    testWidgets(
-        'clearOnTap false keeps the digit, overwrites it, and moves on',
+    testWidgets('clearOnTap false keeps the digit, overwrites it, and moves on',
         (tester) async {
       final controller = VerificationCodeController();
       addTearDown(controller.dispose);

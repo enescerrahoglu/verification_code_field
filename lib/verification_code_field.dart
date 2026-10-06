@@ -743,7 +743,8 @@ class _CodeInputFormatter extends TextInputFormatter {
 
     if (_isLocalEdit(oldText, raw, start, end)) {
       final int tailLength = oldText.length - end;
-      final int insertedEnd = (raw.length - tailLength).clamp(start, raw.length);
+      final int insertedEnd =
+          (raw.length - tailLength).clamp(start, raw.length);
       final String inserted = raw.substring(start, insertedEnd);
       final StringBuffer buffer = StringBuffer()
         ..write(oldText.substring(0, start))

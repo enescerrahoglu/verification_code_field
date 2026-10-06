@@ -42,4 +42,5 @@ controller.focus();
 - **Modular and Reusable:** The VerificationCodeField is designed to be reusable and adaptable, making it a valuable addition to any authentication or verification form within your app.
 
 ## Screenshots
-<img src="https://github.com/user-attachments/assets/7792ee0c-74a7-439b-85a6-9770f63ac861" height="500">
+<img height="480" alt="verification_code_field" src="https://github.com/user-attachments/assets/f7d3653b-5f91-4fe4-8d1b-589b56f2c7ba" />
+

@@ -11,8 +11,8 @@ class VerificationCodeController extends ChangeNotifier {
   ///
   /// Characters that are not digits are removed from [text].
   VerificationCodeController({String text = ''})
-      : _editable = TextEditingController(text: _digitsOnly(text)),
-        _lastText = _digitsOnly(text) {
+    : _editable = TextEditingController(text: _digitsOnly(text)),
+      _lastText = _digitsOnly(text) {
     _editable.addListener(_handleEditable);
   }
 
@@ -321,7 +321,8 @@ class _VerificationCodeFieldState extends State<VerificationCodeField>
     }
 
     final int max = widget.codeDigit.digit;
-    final bool enteredLastDigit = !isDeletion &&
+    final bool enteredLastDigit =
+        !isDeletion &&
         text.length == max &&
         value.selection.isCollapsed &&
         caret >= max;
@@ -360,8 +361,9 @@ class _VerificationCodeFieldState extends State<VerificationCodeField>
 
   void _handleSetText(String sanitized) {
     final int max = widget.codeDigit.digit;
-    final String text =
-        sanitized.length > max ? sanitized.substring(0, max) : sanitized;
+    final String text = sanitized.length > max
+        ? sanitized.substring(0, max)
+        : sanitized;
     final bool changed = text != _previousText;
     _writeValue(
       text,
@@ -445,11 +447,14 @@ class _VerificationCodeFieldState extends State<VerificationCodeField>
                   ContextMenuButtonItem(
                     onPressed: () async {
                       entry?.remove();
-                      final ClipboardData? data =
-                          await Clipboard.getData(Clipboard.kTextPlain);
+                      final ClipboardData? data = await Clipboard.getData(
+                        Clipboard.kTextPlain,
+                      );
                       if (data?.text == null || data!.text!.isEmpty) return;
-                      final String pasted =
-                          data.text!.replaceAll(RegExp(r'[^0-9]'), '');
+                      final String pasted = data.text!.replaceAll(
+                        RegExp(r'[^0-9]'),
+                        '',
+                      );
                       if (pasted.isEmpty || !mounted) return;
                       _applyPaste(pasted);
                     },
@@ -530,10 +535,9 @@ class _VerificationCodeFieldState extends State<VerificationCodeField>
     final bool isEnabled = widget.enabled != false;
     final double fieldSize = widget.fieldSize;
 
-    final InputBorder defaultBorder = widget.border ??
-        OutlineInputBorder(
-          borderRadius: BorderRadius.circular(10.0),
-        );
+    final InputBorder defaultBorder =
+        widget.border ??
+        OutlineInputBorder(borderRadius: BorderRadius.circular(10.0));
     final InputBorder activeBorder = widget.focusedBorder ?? defaultBorder;
 
     return Container(
@@ -575,20 +579,23 @@ class _VerificationCodeFieldState extends State<VerificationCodeField>
 
               final List<Widget> boxes = [];
               for (int i = 0; i < widget.codeDigit.digit; i++) {
-                final bool isActiveBox = _focusNode.hasFocus &&
+                final bool isActiveBox =
+                    _focusNode.hasFocus &&
                     _activeIndex < widget.codeDigit.digit &&
                     i == _activeIndex;
                 final bool isFilled = i < code.length;
 
                 if (i > 0) {
-                  final bool isTripleSep = widget.codeDigit == CodeDigit.six &&
+                  final bool isTripleSep =
+                      widget.codeDigit == CodeDigit.six &&
                       widget.tripleSeparated &&
                       i == 3;
                   boxes.add(
                     SizedBox(
-                        width: isTripleSep
-                            ? 20
-                            : (widget.tripleSeparated ? 5 : 10)),
+                      width: isTripleSep
+                          ? 20
+                          : (widget.tripleSeparated ? 5 : 10),
+                    ),
                   );
                 }
 
@@ -603,7 +610,8 @@ class _VerificationCodeFieldState extends State<VerificationCodeField>
                       child: CustomPaint(
                         painter: _DigitBoxPainter(
                           border: isActiveBox ? activeBorder : defaultBorder,
-                          filled: widget.filled ??
+                          filled:
+                              widget.filled ??
                               (widget.fillColor != null ||
                                   widget.focusedFillColor != null),
                           fillColor: isActiveBox
@@ -614,7 +622,8 @@ class _VerificationCodeFieldState extends State<VerificationCodeField>
                           child: isFilled
                               ? Text(
                                   code[i],
-                                  style: widget.textStyle ??
+                                  style:
+                                      widget.textStyle ??
                                       TextStyle(
                                         fontSize: 26,
                                         fontWeight: FontWeight.bold,
@@ -627,19 +636,17 @@ class _VerificationCodeFieldState extends State<VerificationCodeField>
                                   textAlign: TextAlign.center,
                                 )
                               : (widget.showCursor == true && isActiveBox)
-                                  ? FadeTransition(
-                                      opacity: _cursorController,
-                                      child: Container(
-                                        width: 2,
-                                        height:
-                                            widget.textStyle?.fontSize ?? 26.0,
-                                        color: widget.cursorColor ??
-                                            Theme.of(context)
-                                                .colorScheme
-                                                .primary,
-                                      ),
-                                    )
-                                  : null,
+                              ? FadeTransition(
+                                  opacity: _cursorController,
+                                  child: Container(
+                                    width: 2,
+                                    height: widget.textStyle?.fontSize ?? 26.0,
+                                    color:
+                                        widget.cursorColor ??
+                                        Theme.of(context).colorScheme.primary,
+                                  ),
+                                )
+                              : null,
                         ),
                       ),
                     ),
@@ -651,10 +658,7 @@ class _VerificationCodeFieldState extends State<VerificationCodeField>
                 behavior: HitTestBehavior.translucent,
                 onLongPressStart: (details) =>
                     _showPasteMenu(details.globalPosition),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: boxes,
-                ),
+                child: Row(mainAxisSize: MainAxisSize.min, children: boxes),
               );
             },
           ),
@@ -719,8 +723,11 @@ class _CodeInputFormatter extends TextInputFormatter {
         raw.length == oldText.length + 1 &&
         raw.startsWith(oldText.substring(0, focused)) &&
         raw.substring(focused + 1) == oldText.substring(focused)) {
-      final String updated =
-          oldText.replaceRange(focused, focused + 1, raw[focused]);
+      final String updated = oldText.replaceRange(
+        focused,
+        focused + 1,
+        raw[focused],
+      );
       final int caret = (focused + 1).clamp(0, updated.length);
       return TextEditingValue(
         text: updated,
@@ -731,8 +738,8 @@ class _CodeInputFormatter extends TextInputFormatter {
     if (raw.length < oldText.length) {
       final int caret = selection.isCollapsed
           ? (newValue.selection.isValid
-              ? newValue.selection.extentOffset.clamp(0, raw.length)
-              : raw.length)
+                ? newValue.selection.extentOffset.clamp(0, raw.length)
+                : raw.length)
           : start.clamp(0, raw.length);
       final String text = raw.length > max ? raw.substring(0, max) : raw;
       return TextEditingValue(
@@ -743,8 +750,10 @@ class _CodeInputFormatter extends TextInputFormatter {
 
     if (_isLocalEdit(oldText, raw, start, end)) {
       final int tailLength = oldText.length - end;
-      final int insertedEnd =
-          (raw.length - tailLength).clamp(start, raw.length);
+      final int insertedEnd = (raw.length - tailLength).clamp(
+        start,
+        raw.length,
+      );
       final String inserted = raw.substring(start, insertedEnd);
       final StringBuffer buffer = StringBuffer()
         ..write(oldText.substring(0, start))
@@ -804,8 +813,7 @@ class _DigitBoxPainter extends CustomPainter {
     if (filled && fillColor != null) {
       final paint = Paint()..color = fillColor!;
       if (border is OutlineInputBorder) {
-        final rrect = (border as OutlineInputBorder)
-            .borderRadius
+        final rrect = (border as OutlineInputBorder).borderRadius
             .resolve(TextDirection.ltr)
             .toRRect(rect);
         canvas.drawRRect(rrect, paint);
@@ -829,8 +837,7 @@ class _DigitBoxPainter extends CustomPainter {
 enum CodeDigit {
   four(4),
   five(5),
-  six(6),
-  ;
+  six(6);
 
   const CodeDigit(this.digit);
   final int digit;

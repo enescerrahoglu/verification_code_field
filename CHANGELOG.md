@@ -1,3 +1,8 @@
+## 1.2.7
+
+- Updated `google_fonts` to `^9.0.0` so the package supports the latest dependency versions on pub.dev.
+- Raised the minimum SDK to Dart 3.13 and Flutter 3.47 to match `google_fonts` 9.x.
+
 ## 1.2.6
 
 - Added `clearOnTap`. When it is true, tapping a box clears that box and every box after it. When it is false, the tapped box stays focused and keeps its digit; the next digit overwrites it and moves to the following box.

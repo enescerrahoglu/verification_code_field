@@ -1,4 +1,5 @@
 import 'dart:async';
+
 import 'package:material_ui/material_ui.dart';
 import 'package:verification_code_field/verification_code_field.dart';
 
@@ -214,12 +215,12 @@ class _OtpVerificationPageState extends State<OtpVerificationPage> {
                     child: IconButton(
                       onPressed: () =>
                           ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          behavior: SnackBarBehavior.floating,
-                          backgroundColor: colors.primary,
-                          content: const Text('Back to sign in'),
-                        ),
-                      ),
+                            SnackBar(
+                              behavior: SnackBarBehavior.floating,
+                              backgroundColor: colors.primary,
+                              content: const Text('Back to sign in'),
+                            ),
+                          ),
                       icon: Icon(
                         Icons.arrow_back_rounded,
                         color: colors.primary,
@@ -276,8 +277,8 @@ class _OtpVerificationPageState extends State<OtpVerificationPage> {
                             showCursor: true,
                             cursorColor: colors.primary,
                             fillColor: colors.surface,
-                            focusedFillColor:
-                                colors.primaryContainer.withValues(alpha: 0.45),
+                            focusedFillColor: colors.primaryContainer
+                                .withValues(alpha: 0.45),
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(12),
                               borderSide: BorderSide(
@@ -325,8 +326,9 @@ class _OtpVerificationPageState extends State<OtpVerificationPage> {
                           ),
                           const SizedBox(height: 28),
                           FilledButton(
-                            onPressed:
-                                _codeComplete && !_isVerifying ? _verify : null,
+                            onPressed: _codeComplete && !_isVerifying
+                                ? _verify
+                                : null,
                             child: _isVerifying
                                 ? SizedBox(
                                     width: 22,
@@ -394,24 +396,15 @@ class _OtpMark extends StatelessWidget {
             colors.primaryContainer.withValues(alpha: 0.55),
           ],
         ),
-        border: Border.all(
-          color: colors.primary.withValues(alpha: 0.18),
-        ),
+        border: Border.all(color: colors.primary.withValues(alpha: 0.18)),
       ),
-      child: Icon(
-        Icons.lock_outline_rounded,
-        size: 36,
-        color: colors.primary,
-      ),
+      child: Icon(Icons.lock_outline_rounded, size: 36, color: colors.primary),
     );
   }
 }
 
 class _ResendRow extends StatelessWidget {
-  const _ResendRow({
-    required this.secondsLeft,
-    required this.onResend,
-  });
+  const _ResendRow({required this.secondsLeft, required this.onResend});
 
   final int secondsLeft;
   final VoidCallback onResend;
@@ -438,9 +431,7 @@ class _ResendRow extends StatelessWidget {
 
     return Text.rich(
       TextSpan(
-        style: text.bodyMedium?.copyWith(
-          color: colors.onSurfaceVariant,
-        ),
+        style: text.bodyMedium?.copyWith(color: colors.onSurfaceVariant),
         children: [
           const TextSpan(text: 'Resend code in '),
           TextSpan(

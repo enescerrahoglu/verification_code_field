@@ -4,8 +4,9 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:example/main.dart';
 
 void main() {
-  testWidgets('OTP page shows verification copy and code field',
-      (WidgetTester tester) async {
+  testWidgets('OTP page shows verification copy and code field', (
+    WidgetTester tester,
+  ) async {
     await tester.pumpWidget(const MyApp());
 
     expect(find.text('Enter verification code'), findsOneWidget);

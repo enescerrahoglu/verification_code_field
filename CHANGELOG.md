@@ -1,4 +1,4 @@
-## 1.2.7
+## 1.3.0
 
 - Updated `google_fonts` to `^9.0.0` so the package supports the latest dependency versions on pub.dev.
 - Raised the minimum SDK to Dart 3.13 and Flutter 3.47 to match `google_fonts` 9.x.
